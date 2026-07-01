@@ -4,6 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>單字怪物 · Word Monster</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#1aa6b7" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="單字怪物" />
+  <link rel="apple-touch-icon" href="assets/icons/icon-180.png" />
+  <link rel="icon" type="image/png" href="assets/icons/icon-192.png" />
   <link rel="stylesheet" href="assets/fonts/fonts.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -85,5 +93,11 @@
   <script src="sprites.js"></script>
   <script src="data.js"></script>
   <script src="game.js"></script>
+  <script>
+    // 只在網頁版註冊 SW（Capacitor 原生 App 已內建離線資產，不需要）
+    if (!window.Capacitor && "serviceWorker" in navigator) {
+      addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+    }
+  </script>
 </body>
 </html>
