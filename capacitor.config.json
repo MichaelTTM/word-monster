@@ -1,0 +1,8 @@
+{
+  "appId": "com.michael.wordmonster",
+  "appName": "單字怪物",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false
+  }
+}

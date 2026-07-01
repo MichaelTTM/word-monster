@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>單字怪物 · Word Monster</title>
+  <link rel="stylesheet" href="assets/fonts/fonts.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- 主選單 / 字彙包 -->
+    <section id="menuScreen" class="screen active">
+      <header class="home-hero">
+        <div class="eyebrow">Word Monster</div>
+        <div class="title">單字怪物</div>
+        <div class="subtitle">翻牌配對 · 收服單字怪物</div>
+        <div class="hero-stats" id="heroStats"></div>
+      </header>
+      <div class="pack-list" id="packList"></div>
+      <div class="nav-row">
+        <button class="btn secondary" id="openDexBtn"><span class="btn-icon" data-icon="book"></span>怪物圖鑑</button>
+      </div>
+    </section>
+
+    <!-- 關卡列表 -->
+    <section id="levelScreen" class="screen">
+      <button class="btn ghost" id="levelBackBtn"><span class="btn-icon" data-icon="arrow-left"></span>字彙包</button>
+      <div class="title" style="font-size:24px;margin-top:6px" id="levelPackName">冒險入門</div>
+      <div class="subtitle">選擇要挑戰的怪物</div>
+      <div class="level-list" id="levelList"></div>
+    </section>
+
+    <!-- 戰鬥 -->
+    <section id="battleScreen" class="screen">
+      <button class="btn ghost" id="battleBackBtn"><span class="btn-icon" data-icon="arrow-left"></span>撤退</button>
+      <div class="battle-top">
+        <div class="monster-stage">
+          <div class="monster-sprite" id="monsterSprite"></div>
+          <div class="monster-name" id="monsterName">字彙史萊姆</div>
+        </div>
+        <div class="bar hp"><span id="monsterHpBar" style="width:100%"></span></div>
+        <div class="bar-label"><span>怪物 HP</span><span id="monsterHpText">8 / 8</span></div>
+        <div class="stat-row">
+          <span class="timer" id="timer"><span class="btn-icon" data-icon="timer"></span>75s</span>
+          <span class="progress-pill" id="progressText">0 / 8 配對</span>
+          <span class="explore-pill" id="exploreText">免責 3</span>
+          <span class="mistake-pill" id="mistakeText">失誤 0</span>
+          <span class="combo" id="comboText"></span>
+        </div>
+        <div class="player-row">
+          <span class="pr-emoji" aria-hidden="true">勇者</span>
+          <div class="pr-bars">
+            <div class="bar php"><span id="playerHpBar" style="width:100%"></span></div>
+            <div class="bar-label"><span>勇者 HP</span><span id="playerHpText">❤❤❤❤❤</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="board" id="board"></div>
+    </section>
+
+    <!-- 圖鑑 -->
+    <section id="dexScreen" class="screen">
+      <div class="title" style="font-size:24px;margin-top:8px">怪物圖鑑</div>
+      <div class="subtitle">擊敗怪物即可收錄 · ★★★ 解鎖弱點情報</div>
+      <div class="dex-grid" id="dexGrid"></div>
+      <div class="nav-row">
+        <button class="btn secondary" id="dexHomeBtn"><span class="btn-icon" data-icon="home"></span>回主選單</button>
+      </div>
+    </section>
+
+    <!-- 圖鑑詳情 -->
+    <section id="dexDetailScreen" class="screen">
+      <div class="dex-detail" id="dexDetail"></div>
+    </section>
+
+  </div>
+
+  <!-- 結果彈窗 -->
+  <div class="overlay" id="overlay">
+    <div class="modal" id="modal"></div>
+  </div>
+
+  <script src="sprites.js"></script>
+  <script src="data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

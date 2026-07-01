@@ -1,0 +1,19 @@
+{
+  "name": "word-monster",
+  "version": "1.0.0",
+  "private": true,
+  "description": "單字怪物 — 翻牌配對背單字 RPG",
+  "scripts": {
+    "sync": "cap sync android",
+    "open:android": "cap open android",
+    "build:debug": "cap sync android && cd android && ./gradlew assembleDebug",
+    "build:aab": "cap sync android && cd android && ./gradlew bundleRelease"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/core": "^6.1.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
+  }
+}

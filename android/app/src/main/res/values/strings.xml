@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">單字怪物</string>
+    <string name="title_activity_main">單字怪物</string>
+    <string name="package_name">com.michael.wordmonster</string>
+    <string name="custom_url_scheme">com.michael.wordmonster</string>
+</resources>
