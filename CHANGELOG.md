@@ -51,3 +51,12 @@
 - index.html 註冊 SW 時監聽 controllerchange，新版 SW 接管後自動重載一次（首次安裝不重載），玩家免手動清快取即拿到最新版。
 - SW 快取 wm-v4 → wm-v5。修改：`www/index.html`、`www/sw.js`。
 - 註：預覽秒數的程式與線上部署本來就已是 base 10s（curl 線上 game.js 確認）；此版解決的是「更新推不到玩家端」的快取問題。
+
+## 2026-07-08 修正開局倒數橫幅遮擋
+
+- 問題：預覽拉長到 10s 後，開局「記住位置」倒數橫幅浮在畫面 16% 處，剛好蓋住怪物名稱與屬性徽章。
+- 根因：橫幅是 position:fixed，但 .screen 進場動畫 fade 帶 transform:translateY，祖先有 transform 會讓子層 fixed 改以該祖先為定位基準 → 橫幅被關進戰鬥面板、無法貼到畫面頂端。
+- 修法：
+  - fade 動畫改為只淡入、移除 translateY（消除定位容器）。
+  - 倒數橫幅改為貼齊畫面最上方的滿版橫條，不再遮擋怪物資訊與卡片；文字改「記住卡片位置 · N」。
+- SW 快取 wm-v6 → wm-v7。修改：`www/style.css`、`www/game.js`、`www/sw.js`。

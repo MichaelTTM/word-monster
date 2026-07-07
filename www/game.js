@@ -326,9 +326,9 @@ function peekStart() {
   const banner = document.createElement("div");
   banner.className = "peek-banner";
   let left = Math.ceil(g.peekMs / 1000);
-  banner.textContent = `記住位置 ${left}`;
+  banner.textContent = `記住卡片位置 · ${left}`;
   document.getElementById("battleScreen").appendChild(banner);
-  const iv = setInterval(() => { left--; if (left > 0) banner.textContent = `記住位置 ${left}`; }, 1000);
+  const iv = setInterval(() => { left--; if (left > 0) banner.textContent = `記住卡片位置 · ${left}`; }, 1000);
 
   setTimeout(() => {
     clearInterval(iv);
