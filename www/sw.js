@@ -1,7 +1,7 @@
 // 單字怪物 Service Worker — 離線可玩 + 可安裝
 // 策略：network-first（線上永遠拿最新，離線 fallback 到快取）。
 // 改版時把 CACHE 版本號 +1，舊快取會自動清掉。
-const CACHE = "wm-v2";
+const CACHE = "wm-v3";
 const ASSETS = [
   "./", "index.html", "style.css", "sprites.js", "data.js", "game.js", "manifest.json",
   "assets/fonts/fonts.css",

@@ -29,3 +29,11 @@
 - Service worker 快取版本 wm-v1 → wm-v2。
 - 主要修改：`www/data.js`（ELEMENTS/BEATS/el/weak/文案）、`www/game.js`、`www/index.html`、`www/style.css`。
 - 驗證：node --check ×2；preview 實測完整流程（戰前選屬性→弱點 -3／普通 -1→提前擊破結算→圖鑑情報解鎖→被剋提示）。
+
+## 2026-07-08 調長開局記憶秒數（使用者反饋）
+
+- 實際玩家反映「一開始給記憶的秒數太短」。4x4 十六張牌僅 3s 確實過趕。
+- 預覽秒數曲線調整：base 3s→5s，衰減放緩，一般關卡下限 3s、BOSS 下限 2.5s。
+  - 第 1 關 3s→5s；最終 BOSS 1.8s→2.5s。其餘關卡多落在 3.7–5s。
+- 其他難度參數（命/時間/免責）不變。
+- SW 快取 wm-v2 → wm-v3。修改：`www/game.js` difficultyFor()。

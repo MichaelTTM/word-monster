@@ -7,7 +7,7 @@ const PLAYER_MAX_HP = 5;       // 真失誤扣命上限
 const TIME_PER_LEVEL = 75;     // 每關秒數（預覽時間不計入）
 const FLIP_BACK_MS = 1000;     // 翻錯蓋回延遲（真失誤）
 const PEEK_BACK_MS = 700;      // 蓋回延遲（盲猜探索，較快）
-const PEEK_MS = 3000;          // 開局亮牌預覽時間
+const PEEK_MS = 5000;          // 開局亮牌預覽時間（實際依 difficultyFor 的 peek）
 
 // ---------- 存檔 ----------
 function loadSave() {
@@ -195,12 +195,12 @@ function difficultyFor(lv) {
   const meta = ALL_LEVELS[gi];
   const pack = PACKS[meta.packIdx];
   const isBoss = meta.levelIdx === pack.levels.length - 1;
-  let peek   = Math.max(1, +(3 - gi * 0.17).toFixed(1)); // 預覽秒數 3.0 → 1.0
+  let peek   = Math.max(3, +(5 - gi * 0.18).toFixed(1)); // 預覽秒數 5.0 → 3.0
   let lives  = Math.max(3, 5 - Math.floor(gi / 4));        // 命 5 → 3
   let time   = Math.max(48, 75 - gi * 2);                  // 秒數 75 → ~50
   let budget = Math.max(1, 4 - Math.floor(gi / 3));        // 免責盲猜次數 4 → 1
   if (isBoss) {
-    peek = Math.max(1, +(peek - 0.5).toFixed(1));
+    peek = Math.max(2.5, +(peek - 0.5).toFixed(1));
     time = Math.max(45, time - 5);
     budget = Math.max(0, budget - 1);
   }
