@@ -398,6 +398,7 @@ svg.pixel { display: block; image-rendering: pixelated; filter: drop-shadow(0 5p
   border: 1px solid var(--line);
   background: #f7fbfd;
 }
+.dd-word .spk svg { width: 20px; height: 20px; stroke: currentColor; }
 
 /* ---------- 字彙包選單 ---------- */
 .pack-list { display: grid; gap: 14px; margin-top: 20px; }
@@ -483,3 +484,70 @@ svg.pixel { display: block; image-rendering: pixelated; filter: drop-shadow(0 5p
     transition-duration: .001ms !important;
   }
 }
+
+/* ---------- 屬性相剋 ---------- */
+.el-chip {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 2px 8px; border-radius: 999px;
+  font-size: 11px; font-weight: 800; line-height: 1.5;
+  color: var(--el, var(--muted));
+  background: var(--el-bg, #f1f5f9);
+  border: 1px solid color-mix(in srgb, var(--el, #94a3b8) 32%, transparent);
+  vertical-align: middle; white-space: nowrap;
+}
+.el-chip svg { width: 12px; height: 12px; stroke: currentColor; flex: 0 0 auto; }
+.el-chip.unknown { color: var(--muted); border-style: dashed; }
+
+.monster-el { margin-top: 3px; min-height: 22px; }
+.player-el { display: inline-flex; align-items: center; gap: 4px; }
+.adv-tag, .dis-tag {
+  font-size: 10px; font-weight: 900; color: #fff;
+  padding: 1px 6px; border-radius: 6px; line-height: 1.5;
+}
+.adv-tag { background: var(--good); }
+.dis-tag { background: var(--bad); }
+
+.float-dmg.weak {
+  color: var(--accent-strong);
+  font-size: 30px;
+  text-shadow: 0 0 12px rgba(255,184,77,.85), 0 2px 0 rgba(255,255,255,.75);
+}
+
+/* 戰前情報彈窗 */
+.intro-modal .intro-mel { margin: 2px 0 6px; }
+.intro-modal .intro-mel .el-chip { font-size: 13px; padding: 3px 12px; }
+.intro-pick-label { font-weight: 800; font-size: 13px; margin-top: 10px; color: var(--text); }
+.intro-el-grid { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin: 8px 0 4px; }
+.el-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 7px 11px; border-radius: 10px;
+  border: 1.5px solid var(--line); background: #fff;
+  font-family: inherit; font-weight: 800; font-size: 13px;
+  color: var(--el); cursor: pointer;
+  transition: border-color .12s, background .12s, transform .08s;
+}
+.el-btn svg { width: 14px; height: 14px; stroke: currentColor; }
+.el-btn:active { transform: translateY(2px); }
+.el-btn.sel {
+  border-color: var(--el);
+  background: var(--el-bg);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--el) 25%, transparent);
+}
+.vs-hint { font-size: 12px; font-weight: 800; min-height: 18px; color: var(--muted); }
+.vs-hint.adv { color: var(--good); }
+.vs-hint.dis { color: var(--bad); }
+
+/* 弱點單字 chips（圖鑑 ★★★ / 戰前情報） */
+.weak-info { margin-top: 8px; display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; }
+.weak-chip {
+  display: inline-flex; align-items: center;
+  padding: 2px 9px; border-radius: 999px;
+  font-size: 12px; font-weight: 800;
+  color: var(--accent-strong); background: #fff3e2;
+  border: 1px solid rgba(249,115,22,.35);
+}
+
+/* 圖鑑屬性列 */
+.dx-el { min-height: 20px; margin-top: 2px; }
+.dd-el { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 4px 0 2px; }
+.dd-el .hint { font-size: 12px; color: var(--muted); }

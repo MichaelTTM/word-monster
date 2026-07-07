@@ -15,7 +15,8 @@ function loadSave() {
   catch { return { stars: {} }; }
 }
 function saveGame(s) { localStorage.setItem(SAVE_KEY, JSON.stringify(s)); }
-let save = loadSave(); // { stars: { [levelId]: 1|2|3 } }
+let save = loadSave(); // { stars: { [levelId]: 1|2|3 }, attackEl: 屬性 key }
+if (!ELEMENTS[save.attackEl]) save.attackEl = "fire";
 const starsOf = (id) => save.stars[id] || 0;
 
 // ---------- 解鎖邏輯 ----------
@@ -80,10 +81,27 @@ function svgIcon(name) {
     timer: `<svg ${common}><path d="M10 2h4"/><path d="M12 14V9"/><path d="M9 14h3"/><circle cx="12" cy="14" r="8"/></svg>`,
     volume: `<svg ${common}><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M16 9.5a4 4 0 0 1 0 5"/><path d="M19 7a8 8 0 0 1 0 10"/></svg>`,
     retry: `<svg ${common}><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v6h6"/></svg>`,
+    leaf: `<svg ${common}><path d="M11 20A7 7 0 0 1 4 13c0-4.5 3.5-9 16-9-1 12.5-5 16-9 16z"/><path d="M4 21c3-5.5 7-9.5 12-12.5"/></svg>`,
+    flame: `<svg ${common}><path d="M12 2c.6 3.5-4 6-4 10a4 4 0 0 0 8 0c0-2-1.1-3.4-2-4.5-.2 1.2-.7 2-1.6 2.5.4-2.5-.4-6-.4-8z"/></svg>`,
+    droplet: `<svg ${common}><path d="M12 3s6 6.4 6 10a6 6 0 0 1-12 0c0-3.6 6-10 6-10z"/></svg>`,
+    sun: `<svg ${common}><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.9 4.9 1.4 1.4"/><path d="m17.7 17.7 1.4 1.4"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m4.9 19.1 1.4-1.4"/><path d="m17.7 6.3 1.4-1.4"/></svg>`,
+    moon: `<svg ${common}><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>`,
   };
   return icons[name] || "";
 }
 function iconHTML(name) { return `<span class="btn-icon">${svgIcon(name)}</span>`; }
+// 屬性小徽章；key 不存在（未解鎖）時顯示未知
+function elBadge(key, extra = "") {
+  const e = ELEMENTS[key];
+  if (!e) return `<span class="el-chip unknown ${extra}">？屬性</span>`;
+  return `<span class="el-chip ${extra}" style="--el:${e.color};--el-bg:${e.bg}">${svgIcon(e.icon)}${e.name}</span>`;
+}
+// 相剋關係：atk 對 mon → "adv"（剋制）/ "dis"（被剋）/ "even"
+function matchup(atk, mon) {
+  if (BEATS[atk] === mon) return "adv";
+  if (BEATS[mon] === atk) return "dis";
+  return "even";
+}
 function hydrateIcons(root = document) {
   root.querySelectorAll("[data-icon]").forEach(el => { el.innerHTML = svgIcon(el.dataset.icon); });
 }
@@ -156,11 +174,11 @@ function openPack(pi) {
     el.innerHTML = `
       <div class="lc-emoji">${unlocked ? sprite(lv, 46) : `<span class="btn-icon lock-mark">${svgIcon("lock")}</span>`}</div>
       <div class="lc-info">
-        <div class="lc-name">${unlocked ? lv.monster : "？？？"}${d.isBoss ? ` <span class="boss-tag">BOSS</span>` : ""}</div>
+        <div class="lc-name">${unlocked ? lv.monster : "？？？"}${unlocked && stars > 0 ? " " + elBadge(lv.el) : ""}${d.isBoss ? ` <span class="boss-tag">BOSS</span>` : ""}</div>
         <div class="lc-sub">第 ${lv.id} 關 · ♥${d.lives} · ${d.time}s · 預覽${d.peek}s</div>
       </div>
       <div class="lc-stars">${starStr(stars)}</div>`;
-    if (unlocked) makePressable(el, () => startBattle(lv), `挑戰第 ${lv.id} 關，${lv.monster}`);
+    if (unlocked) makePressable(el, () => openIntro(lv), `挑戰第 ${lv.id} 關，${lv.monster}`);
     list.appendChild(el);
   });
   show("levelScreen");
@@ -189,6 +207,76 @@ function difficultyFor(lv) {
   return { peek, lives, time, budget, isBoss };
 }
 
+// =====================================================================
+// 戰前情報 / 攻擊屬性選擇
+// =====================================================================
+function openIntro(lv) {
+  const overlay = document.getElementById("overlay");
+  const modal = document.getElementById("modal");
+  const stars = starsOf(lv.id);
+  const known = stars > 0; // 打贏過才知道怪物屬性
+  const d = difficultyFor(lv);
+
+  const weakInfo = stars >= 3
+    ? `<p class="hint weak-info">弱點單字：${lv.weak.map(en => {
+        const w = lv.words.find(x => x.en === en);
+        return `<span class="weak-chip">${en} ${w ? w.zh : ""}</span>`;
+      }).join("")}</p>`
+    : `<p class="hint">★★★ 大師可解鎖弱點單字情報</p>`;
+
+  modal.className = "modal intro-modal";
+  modal.innerHTML = `
+    <div class="m-emoji">${sprite(lv, 84)}</div>
+    <h2>${lv.monster}${d.isBoss ? ` <span class="boss-tag">BOSS</span>` : ""}</h2>
+    <div class="intro-mel">${known ? elBadge(lv.el) : elBadge(null)}</div>
+    <p>第 ${lv.id} 關 · ♥${d.lives} · ${d.time}s · 預覽 ${d.peek}s</p>
+    ${weakInfo}
+    <div class="intro-pick-label">選擇攻擊屬性</div>
+    <div class="intro-el-grid" id="introElGrid"></div>
+    <p class="vs-hint" id="vsHint"></p>
+    <p class="hint">相剋口訣：火剋草 · 草剋水 · 水剋火 · 光暗互剋</p>
+    <button class="btn" id="introFight">開戰！</button>
+    <button class="btn ghost" id="introBack">${iconHTML("arrow-left")}返回</button>`;
+
+  const grid = modal.querySelector("#introElGrid");
+  const hint = modal.querySelector("#vsHint");
+  function renderHint() {
+    if (!known) {
+      hint.textContent = "屬性未知——擊敗一次後解鎖情報";
+      hint.className = "vs-hint";
+      return;
+    }
+    const r = matchup(save.attackEl, lv.el);
+    if (r === "adv") { hint.textContent = "效果絕佳！弱點傷害 x3，免責 +1"; hint.className = "vs-hint adv"; }
+    else if (r === "dis") { hint.textContent = "效果不佳…弱點加成被封印"; hint.className = "vs-hint dis"; }
+    else { hint.textContent = "普通效果：弱點傷害 x2"; hint.className = "vs-hint"; }
+  }
+  Object.keys(ELEMENTS).forEach(key => {
+    const e = ELEMENTS[key];
+    const b = document.createElement("button");
+    b.className = "el-btn" + (save.attackEl === key ? " sel" : "");
+    b.style.setProperty("--el", e.color);
+    b.style.setProperty("--el-bg", e.bg);
+    b.innerHTML = `${svgIcon(e.icon)}${e.name}`;
+    b.setAttribute("aria-label", `攻擊屬性 ${e.name}`);
+    b.onclick = () => {
+      save.attackEl = key; saveGame(save);
+      grid.querySelectorAll(".el-btn").forEach(x => x.classList.remove("sel"));
+      b.classList.add("sel");
+      renderHint();
+    };
+    grid.appendChild(b);
+  });
+  renderHint();
+
+  modal.querySelector("#introFight").onclick = () => {
+    overlay.classList.remove("active");
+    startBattle(lv);
+  };
+  modal.querySelector("#introBack").onclick = () => overlay.classList.remove("active");
+  overlay.classList.add("active");
+}
+
 function startBattle(lv) {
   const cards = [];
   lv.words.forEach((w, wi) => {
@@ -198,20 +286,30 @@ function startBattle(lv) {
   shuffle(cards);
 
   const d = difficultyFor(lv);
+  const atkEl = save.attackEl;
+  const rel = matchup(atkEl, lv.el); // adv / dis / even
+  const budget = d.budget + (rel === "adv" ? 1 : 0); // 屬性優勢：免責 +1
   game = {
     lv, cards,
     monsterHp: lv.words.length, monsterMax: lv.words.length,
     livesMax: d.lives, playerHp: d.lives,
     time: d.time,
     peekMs: d.peek * 1000,
-    exploreLeft: d.budget, exploreMax: d.budget,
+    exploreLeft: budget, exploreMax: budget,
     combo: 0, maxCombo: 0, mistakes: 0,
     first: null, busy: false, matched: 0, timer: null,
     seen: new Set(),   // 曾翻開過又蓋回的牌（判定「真失誤」用）
+    atkEl, rel,
+    weakSet: new Set(lv.weak || []), // 弱點單字（en）
+    weakHits: 0,
+    matchedPairs: new Set(),         // 已配對 pairId（提前擊破時算漏網單字）
   };
 
   document.getElementById("monsterSprite").innerHTML = sprite(lv, 96);
   document.getElementById("monsterName").textContent = lv.monster;
+  document.getElementById("monsterEl").innerHTML = elBadge(lv.el);
+  document.getElementById("playerEl").innerHTML =
+    elBadge(atkEl) + (rel === "adv" ? `<span class="adv-tag">剋</span>` : rel === "dis" ? `<span class="dis-tag">被剋</span>` : "");
   renderBoard();
   updateBattleUI();
   show("battleScreen");
@@ -295,16 +393,29 @@ function flipCard(idx) {
 function matchSuccess(i, j) {
   game.combo++;
   game.maxCombo = Math.max(game.maxCombo, game.combo);
-  comboTone(game.combo);
   setTimeout(() => { cardEl(i).classList.add("matched"); cardEl(j).classList.add("matched"); }, 220);
   cardEl(i).setAttribute("aria-label", "已配對");
   cardEl(j).setAttribute("aria-label", "已配對");
   cardEl(i).tabIndex = -1;
   cardEl(j).tabIndex = -1;
 
+  // 屬性相剋傷害：弱點字 x2；剋制怪物 x3；被剋則加成被封印
+  const pairId = game.cards[i].pairId;
+  const word = game.lv.words[pairId];
+  const isWeak = game.weakSet.has(word.en);
+  let dmg = 1;
+  if (isWeak) dmg = game.rel === "adv" ? 3 : game.rel === "dis" ? 1 : 2;
+  if (isWeak && dmg > 1) {
+    game.weakHits++;
+    beep(1175, 0.1, "triangle", 0.2); setTimeout(() => beep(1568, 0.16, "triangle", 0.2), 90);
+  } else {
+    comboTone(game.combo);
+  }
+
   game.matched++;
-  game.monsterHp = Math.max(0, game.monsterHp - 1);
-  damageMonster();
+  game.matchedPairs.add(pairId);
+  game.monsterHp = Math.max(0, game.monsterHp - dmg);
+  damageMonster(dmg, isWeak && dmg > 1);
   if (game.combo >= 2) showCombo(game.combo);
   updateBattleUI();
 
@@ -345,12 +456,13 @@ function matchFail(i, j) {
   }, penalize ? FLIP_BACK_MS : PEEK_BACK_MS);
 }
 
-function damageMonster() {
+function damageMonster(dmg = 1, weak = false) {
   const m = document.getElementById("monsterSprite");
   m.classList.remove("hit"); void m.offsetWidth; m.classList.add("hit");
   const stage = document.querySelector(".monster-stage");
   const f = document.createElement("div");
-  f.className = "float-dmg"; f.textContent = "-1";
+  f.className = "float-dmg" + (weak ? " weak" : "");
+  f.textContent = weak ? `弱點! -${dmg}` : `-${dmg}`;
   stage.appendChild(f);
   setTimeout(() => f.remove(), 800);
 }
@@ -400,6 +512,9 @@ function endBattle(win) {
   const modal = document.getElementById("modal");
 
   if (win) {
+    // 提前擊破（弱點傷害）時翻開剩牌，漏網單字列在結算裡
+    document.querySelectorAll("#board .card:not(.matched)").forEach(c => c.classList.add("flipped", "peek"));
+    const leftover = lv.words.filter((w, wi) => !g.matchedPairs.has(wi));
     let stars = 1;
     if (g.mistakes === 0) stars = 3;
     else if (g.mistakes <= 2) stars = 2;
@@ -413,7 +528,8 @@ function endBattle(win) {
       <div class="m-emoji">${sprite(lv, 84)}</div>
       <h2>擊敗 ${lv.monster}！</h2>
       <div class="m-stars">${starStr(best)}</div>
-      <p>最高連擊 x${g.maxCombo} · 扣血失誤 ${g.mistakes} 次</p>
+      <p>最高連擊 x${g.maxCombo} · 弱點擊破 ${g.weakHits} 次 · 扣血失誤 ${g.mistakes} 次</p>
+      ${leftover.length ? `<p class="hint">提前擊破！這幾個字順便帶走：${leftover.map(w => `${w.en} ${w.zh}`).join("、")}</p>` : ""}
       ${best < 3 ? `<p class="hint">★★★ 大師：全程零扣血通關（盲猜不算），解鎖弱點情報</p>` : `<p class="hint">已達大師級！弱點情報已在圖鑑解鎖</p>`}
       <button class="btn" id="modalNext">${next ? `下一關 ${iconHTML("arrow-right")}` : `${iconHTML("home")}回到地圖`}</button>
       <button class="btn secondary" id="modalRetry">${iconHTML("retry")}再玩一次</button>
@@ -434,7 +550,7 @@ function endBattle(win) {
   if (nextBtn) nextBtn.onclick = () => {
     overlay.classList.remove("active");
     const next = nextLevelOf(lv);
-    if (next) startBattle(next); else backToPacks();
+    if (next) openIntro(next); else backToPacks();
   };
   document.getElementById("modalRetry").onclick = () => { overlay.classList.remove("active"); startBattle(lv); };
   document.getElementById("modalHome").onclick = () => { overlay.classList.remove("active"); backToPacks(); };
@@ -466,6 +582,7 @@ function openDex() {
     cell.innerHTML = `
       <div class="dx-emoji">${unlocked ? sprite(lv, 48) : `<span class="btn-icon lock-mark">${svgIcon("lock")}</span>`}</div>
       <div class="dx-name">${unlocked ? lv.monster : "？？？"}</div>
+      <div class="dx-el">${unlocked ? elBadge(lv.el) : ""}</div>
       <div class="dx-stars">${unlocked ? starStr(stars) : ""}</div>`;
     if (unlocked) makePressable(cell, () => openDexDetail(lv), `查看${lv.monster}圖鑑`);
     grid.appendChild(cell);
@@ -486,11 +603,15 @@ function openDexDetail(lv) {
     <div class="dd-head ${stars === 3 ? "mastered" : ""}">
       <div class="dd-sprite">${sprite(lv, 96)}</div>
       <h2>${lv.monster}</h2>
+      <div class="dd-el">${elBadge(lv.el)}<span class="hint">剋牠選「${ELEMENTS[Object.keys(BEATS).find(k => BEATS[k] === lv.el)]?.name || "？"}」屬性</span></div>
       <div class="m-stars">${starStr(stars)}</div>
     </div>
-    ${tier(1, "擊敗", "已收錄外觀與名稱。")}
+    ${tier(1, "擊敗", "已收錄外觀、名稱與屬性。")}
     ${tier(2, "熟練", lv.desc)}
-    ${tier(3, "大師", "💥 弱點情報：" + lv.weakness)}
+    ${tier(3, "大師", "💥 弱點情報：" + lv.weakness + `<div class="weak-info">${lv.weak.map(en => {
+      const w = lv.words.find(x => x.en === en);
+      return `<span class="weak-chip">${en} ${w ? w.zh : ""}</span>`;
+    }).join("")}</div>`)}
     <div class="dd-words-head">
       <span>單字表（${lv.words.length}）</span>
       ${stars >= 3 ? `<button class="btn ghost" id="readAll">${iconHTML("volume")}朗讀全部</button>` : `<span class="hint">★★★ 解鎖一鍵朗讀</span>`}
