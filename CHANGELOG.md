@@ -44,3 +44,10 @@
   - 第 1 關 5s→10s；一般關卡 ~6-10s；最終 BOSS 5s。
 - 修改：`www/game.js` difficultyFor()（base 5→10、下限 3→6、BOSS 下限 2.5→5）＋ PEEK_MS 常數。
 - SW 快取 wm-v3 → wm-v4。
+
+## 2026-07-08 Service Worker 自動更新
+
+- 問題：改版後玩家（尤其加入主畫面的 PWA）常被舊 SW 快取住看到舊版，誤以為沒改到。
+- index.html 註冊 SW 時監聽 controllerchange，新版 SW 接管後自動重載一次（首次安裝不重載），玩家免手動清快取即拿到最新版。
+- SW 快取 wm-v4 → wm-v5。修改：`www/index.html`、`www/sw.js`。
+- 註：預覽秒數的程式與線上部署本來就已是 base 10s（curl 線上 game.js 確認）；此版解決的是「更新推不到玩家端」的快取問題。

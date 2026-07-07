@@ -98,7 +98,18 @@
   <script>
     // 只在網頁版註冊 SW（Capacitor 原生 App 已內建離線資產，不需要）
     if (!window.Capacitor && "serviceWorker" in navigator) {
-      addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+      addEventListener("load", () => {
+        // 記錄進頁時是否已有 SW 掌控（首次安裝時為 null，不需要重載）
+        const hadController = !!navigator.serviceWorker.controller;
+        navigator.serviceWorker.register("sw.js").catch(() => {});
+        // 新版 SW 接管後自動重載一次，確保玩家拿到最新版（免手動清快取）
+        let reloaded = false;
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          if (reloaded || !hadController) return;
+          reloaded = true;
+          location.reload();
+        });
+      });
     }
   </script>
 </body>
